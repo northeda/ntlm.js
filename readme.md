@@ -3,6 +3,8 @@ ntlm.js
 Javascript implementation of Microsoft NTLM authentication over HTTP. Gives you the possibility to do that AJAX NTLM
 you've always wanted.
 
+This forked version uses promisified Fetch() calls instead of XMLHttpRequests for React Native goodness.
+
 Usage
 ------
     Ntlm.setCredentials('domain', 'username', 'password');
