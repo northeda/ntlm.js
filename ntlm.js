@@ -232,24 +232,45 @@ Ntlm.isChallenge = function(xhr) {
 };
 
 Ntlm.authenticate = function(url) {
-    if (!Ntlm.domain || !Ntlm.username || !Ntlm.lmHashedPassword || !Ntlm.ntHashedPassword) {
-        Ntlm.error('No NTLM credentials specified. Use Ntlm.setCredentials(...) before making calls.');
-        return false;
-    }
-    var hostname = Ntlm.getLocation(url).hostname;
-    var msg1 = Ntlm.createMessage1(hostname);
-    var request = new XMLHttpRequest();
-    request.open('GET', url, false);
-    request.setRequestHeader('Authorization', 'NTLM ' + msg1.toBase64());
-    request.send(null);
-    var response = request.getResponseHeader('WWW-Authenticate');
-    var challenge = Ntlm.getChallenge(response);
 
-    var msg3 = Ntlm.createMessage3(challenge, hostname);
-    request.open('GET', url, false);
-    request.setRequestHeader('Authorization', 'NTLM ' + msg3.toBase64());
-    request.send(null);
-    return request.status == 200;
+    return new Promise((resolve, reject) => {
+
+        if (!Ntlm.domain || !Ntlm.username || !Ntlm.lmHashedPassword || !Ntlm.ntHashedPassword) {
+            Ntlm.error('No NTLM credentials specified. Use Ntlm.setCredentials(...) before making calls.');
+            reject(false);
+        }
+        var hostname = "{your hostname here}";
+        var msg1 = Ntlm.createMessage1(hostname);
+
+        fetch(url, {
+            method: 'GET',
+            body: null,
+            credentials: 'include',
+            headers: {
+                'Authorization': 'NTLM ' + msg1.toBase64()
+            }
+        }).then( res1 => {
+
+            if (res1.headers && res1.headers.map["www-authenticate"]) {
+
+                var challenge = Ntlm.getChallenge(res1.headers.map["www-authenticate"][0]);
+
+                fetch(url, {
+                    method: 'GET',
+                    body: null,
+                    credentials: 'include',
+                    headers: {
+                        'Authorization': 'NTLM ' + Ntlm.createMessage3(challenge, hostname).toBase64()
+                    }
+                }).then (res2 => {
+
+                    resolve(res2);
+
+                });
+            }
+        });
+
+    });
 };
 
 /*
@@ -582,3 +603,5 @@ function des_createKeys (key) {
     //return the keys we've created
     return keys;
 } //end of des_createKeys
+
+export default Ntlm;
