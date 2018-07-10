@@ -7,16 +7,25 @@ This forked version uses promisified Fetch() calls instead of XMLHttpRequests fo
 
 Usage
 ------
+    import Ntlm from "./ntlm";
+    
     Ntlm.setCredentials('domain', 'username', 'password');
     var url = 'http://myserver.com/secret.txt';
 
-    if (Ntlm.authenticate(url)) {
-        var request = new XMLHttpRequest();
-        request.open('GET', url, false);
-        request.send(null);
-        console.log(request.responseText);
-        // => My super secret message stored on server.
-    }
+    export default class App extends Component<Props> {
+      componentDidMount() {
+
+        Ntlm.authenticate(url).then(res => {
+
+            fetch(url).then(response => {
+              console.log(response);
+            });
+
+        });
+      }
+      ...
+    }  
+      
 
 Setup
 ------
